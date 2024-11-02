@@ -16,105 +16,38 @@ bool Is_SystemDLL(const char* dllName) {
     return false;
 
 }
-
 void SetConsoleColor(int color) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
 }
-void Exe_ViewImportedDLLs(const char* filePath) {
-    HMODULE hModule = LoadLibraryExA(filePath, NULL, DONT_RESOLVE_DLL_REFERENCES);
-    if (hModule == NULL) {
-        std::cerr << "Failed to load the PE file." << std::endl;
-        return;
-    }
+void Exe_Output(std::vector<std::string>& DllList) {
+    if (DllList.size())
+    {
+        std::cout << "Imported DLLs:" << std::endl;
+        for (const auto& dll : DllList) {
+            if (!Is_SystemDLL(dll.c_str()))
+            {
+                SetConsoleColor(FOREGROUND_GREEN);
+                std::cout << "[+] " << dll << std::endl;
+                SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
-    PIMAGE_DOS_HEADER dosHeader = reinterpret_cast<PIMAGE_DOS_HEADER>(hModule);
-    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
-        std::cerr << "Invalid DOS signature." << std::endl;
-        FreeLibrary(hModule);
-        return;
-    }
+            }
+            else
+            {
+                std::cout << "   " << dll << std::endl;
+            }
 
-    PIMAGE_NT_HEADERS ntHeaders = reinterpret_cast<PIMAGE_NT_HEADERS>(
-        reinterpret_cast<BYTE*>(hModule) + dosHeader->e_lfanew);
-    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
-        std::cerr << "Invalid NT signature." << std::endl;
-        FreeLibrary(hModule);
-        return;
-    }
-
-    PIMAGE_IMPORT_DESCRIPTOR importDescriptor = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>(
-        reinterpret_cast<BYTE*>(hModule) +
-        ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-
-    if (importDescriptor == NULL) {
-        std::cerr << "No import table found." << std::endl;
-        FreeLibrary(hModule);
-        return;
-    }
-
-    std::vector<std::string> DllList;
-    std::cout << "Imported DLLs:" << std::endl;
-    while (importDescriptor->Name != NULL) {
-        const char* dllName = reinterpret_cast<const char*>(reinterpret_cast<BYTE*>(hModule) + importDescriptor->Name);
-
-        DllList.push_back(dllName);
-        importDescriptor++;
-    }
-
-    for (const auto& dll : DllList) {
-        if (!Is_SystemDLL(dll.c_str()))
-        {
-            std::cout << "[+] " << dll << std::endl;
         }
-        else
-        {
-            std::cout << "   " << dll << std::endl;
-        }
-        
     }
+    else
+    {
 
-    FreeLibrary(hModule);
-}
-
-void File_ViewImportedDLLs(const char* filePath, const char* ExeName) {
-    HMODULE hModule = LoadLibraryExA(filePath, NULL, DONT_RESOLVE_DLL_REFERENCES);
-    if (hModule == NULL) {
-        std::cout << filePath << std::endl;
-        return;
+        SetConsoleColor(FOREGROUND_RED);
+        std::cout << "[-] Not Find Imported" << std::endl;
+        SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
-
-    PIMAGE_DOS_HEADER dosHeader = reinterpret_cast<PIMAGE_DOS_HEADER>(hModule);
-    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
-        std::cout << filePath << std::endl;
-        FreeLibrary(hModule);
-        return;
-    }
-
-    PIMAGE_NT_HEADERS ntHeaders = reinterpret_cast<PIMAGE_NT_HEADERS>(
-        reinterpret_cast<BYTE*>(hModule) + dosHeader->e_lfanew);
-    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
-        std::cout << filePath << std::endl;
-        FreeLibrary(hModule);
-        return;
-    }
-
-    PIMAGE_IMPORT_DESCRIPTOR importDescriptor = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>(
-        reinterpret_cast<BYTE*>(hModule) +
-        ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-
-    if (importDescriptor == NULL) {
-        FreeLibrary(hModule);
-        return;
-    }
-
-    std::vector<std::string> DllList;
-    while (importDescriptor->Name != NULL) {
-        const char* dllName = reinterpret_cast<const char*>(reinterpret_cast<BYTE*>(hModule) + importDescriptor->Name);
-
-        DllList.push_back(dllName);
-        importDescriptor++;
-    }
+} 
+void File_Output(std::string filePath, std::vector<std::string>& DllList) {
     int iNum = 0;
     for (const auto& dll : DllList) {
         if (!Is_SystemDLL(dll.c_str()))
@@ -125,7 +58,7 @@ void File_ViewImportedDLLs(const char* filePath, const char* ExeName) {
     }
     if (!iNum)
     {
-        std::cout  << filePath << std::endl;
+        std::cout << filePath << std::endl;
         return;
     }
     else
@@ -135,101 +68,195 @@ void File_ViewImportedDLLs(const char* filePath, const char* ExeName) {
         SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 
-    // »ñÈ¡µ±Ç°½ø³ÌÂ·¾¶
+    // è·å–å½“å‰è¿›ç¨‹è·¯å¾„
     char currentPath[MAX_PATH];
     GetModuleFileNameA(NULL, currentPath, MAX_PATH);
     std::filesystem::path currentDir = std::filesystem::path(currentPath).parent_path();
     std::filesystem::path targetDir;
+
+    std::filesystem::path path(filePath);
+    std::string ExeName = path.filename().string(); // è·å–æ–‡ä»¶å
     if (isx64)
     {
-        targetDir = currentDir / "binX64" / ExeName;
+        targetDir = currentDir / "x64bin" / ExeName;
     }
     else
     {
-        targetDir = currentDir / "binX86" / ExeName;
+        targetDir = currentDir / "x86bin" / ExeName;
     }
-   
 
-    // ´´½¨Ä¿±êÎÄ¼ş¼Ğ
+
+    // åˆ›å»ºç›®æ ‡æ–‡ä»¶å¤¹
     if (!std::filesystem::exists(targetDir)) {
         std::filesystem::create_directories(targetDir);
     }
     std::filesystem::copy_file(filePath, targetDir / ExeName, std::filesystem::copy_options::overwrite_existing);
-    // ÒÆ¶¯DLLÎÄ¼ş²¢¼ÇÂ¼Ãû³Æ
+    // ç§»åŠ¨DLLæ–‡ä»¶å¹¶è®°å½•åç§°
     std::ofstream dllNamesFile(targetDir / "Infos.txt");
     dllNamesFile << filePath << std::endl;
     std::filesystem::path sourceDir = std::filesystem::path(filePath).parent_path();
-    for (const auto& dll : DllList) {
-        std::filesystem::path sourceDllPath = sourceDir  / dll;
-        std::filesystem::path targetDllPath = targetDir / dll;
-        if (!Is_SystemDLL(dll.c_str()))
-        {
-            dllNamesFile << "[+] " << dll << std::endl;
-        }
-        else
-        {
-            dllNamesFile <<  dll << std::endl;
-        }
-        
-        if (std::filesystem::exists(sourceDllPath)) {
-            std::filesystem::copy_file(sourceDllPath, targetDllPath, std::filesystem::copy_options::overwrite_existing);
-        }
-    }
-
-    dllNamesFile.close();
-    FreeLibrary(hModule);
-}
-void getFiles(std::string path, std::vector<std::string>& files)
-{
-    //ÎÄ¼ş¾ä±ú
-    intptr_t hFile = 0;
-    //ÎÄ¼şĞÅÏ¢
-    struct _finddata_t fileinfo;
-    std::string p;
-    if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
+    if (DllList.size())
     {
-        do
-        {
-            if ((fileinfo.attrib & _A_SUBDIR))
+        for (const auto& dll : DllList) {
+            std::filesystem::path sourceDllPath = sourceDir / dll;
+            std::filesystem::path targetDllPath = targetDir / dll;
+            if (!Is_SystemDLL(dll.c_str()))
             {
-                // ¼ì²éÄ¿Â¼ÃûÊÇ·ñÒÔ $ ¿ªÍ·
-                if (fileinfo.name[0] != '$')
-                {
-                    if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
-                        getFiles(p.assign(path).append("\\").append(fileinfo.name), files);
-                }
+                dllNamesFile << "[+] " << dll << std::endl;
             }
             else
             {
-                files.push_back(p.assign(path).append("\\").append(fileinfo.name));
-                std::string IsExe = fileinfo.name;
-                if (IsExe.substr(IsExe.size() - 4) == ".exe")
-                {
-                    
-                    File_ViewImportedDLLs(files.back().c_str(), fileinfo.name);
+                dllNamesFile << dll << std::endl;
+            }
+
+            if (std::filesystem::exists(sourceDllPath)) {
+                std::filesystem::copy_file(sourceDllPath, targetDllPath, std::filesystem::copy_options::overwrite_existing);
+            }
+        }
+    }
+
+
+    dllNamesFile.close();
+}
+void ViewImportedDLLs(const char* filePath, std::vector<std::string>& DllList) {
+    HMODULE hModule = LoadLibraryExA(filePath, NULL, DONT_RESOLVE_DLL_REFERENCES);
+    if (hModule == NULL) {
+        return;
+    }
+
+    PIMAGE_DOS_HEADER dosHeader = reinterpret_cast<PIMAGE_DOS_HEADER>(hModule);
+    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+        FreeLibrary(hModule);
+        return;
+    }
+
+    PIMAGE_NT_HEADERS ntHeaders = reinterpret_cast<PIMAGE_NT_HEADERS>(
+        reinterpret_cast<BYTE*>(hModule) + dosHeader->e_lfanew);
+    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
+        FreeLibrary(hModule);
+        return;
+    }
+
+    DWORD importTableRVA = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    if (importTableRVA == 0) {
+
+        FreeLibrary(hModule);
+        return;
+    }
+
+    PIMAGE_IMPORT_DESCRIPTOR importDescriptor = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>(
+        reinterpret_cast<BYTE*>(hModule) + importTableRVA);
+    while (importDescriptor->Name != NULL) {
+        // æ£€æŸ¥ importDescriptor æ˜¯å¦ä¸ºæœ‰æ•ˆæŒ‡é’ˆ
+        if (IsBadReadPtr(importDescriptor, sizeof(IMAGE_IMPORT_DESCRIPTOR))) {
+
+            break;
+        }
+
+        // è®¡ç®— DLL åç§°çš„åœ°å€
+        char* dllName = reinterpret_cast<char*>(reinterpret_cast<BYTE*>(hModule) + importDescriptor->Name);
+
+        // æ£€æŸ¥ dllName çš„æœ‰æ•ˆæ€§
+        if (dllName && !IsBadStringPtrA(dllName, MAX_PATH) && strlen(dllName) > 0) {
+            DllList.push_back(dllName);  // åªæœ‰åœ¨ dllName æœ‰æ•ˆæ—¶æ‰åŠ å…¥åˆ—è¡¨
+        }
+
+        importDescriptor++;
+
+        // ç»ˆæ­¢æ¡ä»¶ï¼Œé¿å…è¶Šç•Œ
+        if (importDescriptor->Characteristics == NULL) {
+            break;
+        }
+    }
+    FreeLibrary(hModule);
+    return;
+
+
+}
+bool hasReadPermission(const std::string& path) {
+    struct _stat fileInfo;
+    if (_stat(path.c_str(), &fileInfo) != 0) {
+        if (errno == EACCES) {
+
+            SetConsoleColor(FOREGROUND_RED);
+            std::cerr << "[-] Permission denied: " << path << std::endl;
+            SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+        else {
+
+            SetConsoleColor(FOREGROUND_RED);
+            std::cerr << "[-] Unable to access path: " << path << " (Error code: " << errno << ")" << std::endl;
+            SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+        return false;
+    }
+    return true;
+}
+void getFiles_and_view(const std::string& path) {
+    if (!hasReadPermission(path)) {
+        return;  // å¦‚æœæ²¡æœ‰è®¿é—®æƒé™ï¼Œç›´æ¥è¿”å›
+    }
+
+    intptr_t hFile = 0;
+    struct _finddata_t fileinfo;
+
+    std::string searchPath = path + "\\*";
+
+    if ((hFile = _findfirst(searchPath.c_str(), &fileinfo)) == -1) {
+        std::cerr << "[-] Failed to open directory: " << path << std::endl;
+        return;
+    }
+
+    do {
+        if (fileinfo.attrib & _A_SUBDIR) {
+            // è¿‡æ»¤æ‰ "." å’Œ ".." ç›®å½•
+            if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0) {
+                // æ’é™¤éšè—çš„ç³»ç»Ÿç›®å½•ï¼Œä¾‹å¦‚ "$Recycle.Bin"
+                if (fileinfo.name[0] != '$') {
+                    std::string subdirPath = path + "\\" + fileinfo.name;
+                    getFiles_and_view(subdirPath);
                 }
             }
-        } while (_findnext(hFile, &fileinfo) == 0);
-        _findclose(hFile);
-    }
-}
+        }
+        else {
+            std::string fullPath = path + "\\" + fileinfo.name;
 
+            if (fullPath.size() > 4 && fullPath.substr(fullPath.size() - 4) == ".exe") {
+                try {
+                    std::vector<std::string> DllList;
+                    ViewImportedDLLs(fullPath.c_str(), DllList);
+                    File_Output(fullPath.c_str(), DllList);
+                }
+                catch (const std::exception& e) {
+                    SetConsoleColor(FOREGROUND_RED);
+                    std::cerr << "[-] Exception while processing file: " << fullPath << ". Error: " << e.what() << std::endl;
+                    SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+                }
+                catch (...) {
+                    SetConsoleColor(FOREGROUND_RED);
+                    std::cerr << "[-] Unknown error occurred while processing file: " << fullPath << std::endl;
+                    SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+                }
+            }
+        }
+    } while (_findnext(hFile, &fileinfo) == 0);
+
+    _findclose(hFile);
+}
 void DisplayHelp() {
 
     std::cout << "Usage: ZeroEye [options]" << std::endl;
-    std::cout << "Ñ¡Ïî:" << std::endl;
-    std::cout << "  -h\t°ïÖú" << std::endl;
-    std::cout << "  -i\t<Exe Â·¾¶>\tÁĞ³öExeµÄµ¼Èë±í" << std::endl;
-    std::cout << "  -p\t<ÎÄ¼şÂ·¾¶>\t×Ô¶¯ËÑË÷ÎÄ¼şÂ·¾¶ÏÂ¿É½Ù³ÖÀûÓÃµÄ°×Ãûµ¥" << std::endl;
+    std::cout << "é€‰é¡¹:" << std::endl;
+    std::cout << "  -h\tå¸®åŠ©" << std::endl;
+    std::cout << "  -i\t<Exe è·¯å¾„>\tåˆ—å‡ºExeçš„å¯¼å…¥è¡¨" << std::endl;
+    std::cout << "  -p\t<æ–‡ä»¶è·¯å¾„>\tè‡ªåŠ¨æœç´¢æ–‡ä»¶è·¯å¾„ä¸‹å¯åŠ«æŒåˆ©ç”¨çš„ç™½åå•" << std::endl;
 }
 int main(int argc, char* argv[]) {
 
 
-#if defined(_WIN64)
-    isx64 = true;
-#else
-    isx64 = false;
-#endif
+
     std::cout << R"(
   _____                        _____                
  |__  /   ___   _ __    ___   | ____|  _   _    ___ 
@@ -238,6 +265,11 @@ int main(int argc, char* argv[]) {
  /____|  \___| |_|     \___/  |_____|  \__, |  \___|
                                        |___/                 
 )" << std::endl;
+#if defined(_WIN64)
+    isx64 = true;
+#else
+    isx64 = false;
+#endif
     std::cout << (isx64 ? "\t\t\t\t  x64" : "\t\t\t\t  x86") << " Version:3.0\n" << std::endl;
 
     if (argc < 2) {
@@ -253,14 +285,15 @@ int main(int argc, char* argv[]) {
         }
         else if (strcmp(argv[i], "-i") == 0) {
             if (i + 1 < argc) {
- 
-                Exe_ViewImportedDLLs(argv[++i]);
+
+                std::vector<std::string> DllList;
+                ViewImportedDLLs(argv[++i], DllList);
+                Exe_Output(DllList);
             }
         }
         else if (strcmp(argv[i], "-p") == 0) {
             if (i + 1 < argc) {
-                std::vector<std::string> vec_img_path;
-                getFiles(argv[++i], vec_img_path);
+                getFiles_and_view(argv[++i]);
             }
         }
 
@@ -271,6 +304,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    
+
     return 0;
 }
