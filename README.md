@@ -17,6 +17,9 @@
 * 2.0 可在Release中获取
 * 3.0 （**船新版本**）将不再在以上基础上更新，以后将完全使用c++完成所有操作！！！
 * 3.1 修复bug
+* 3.2 优化输出和禁用损坏映像提示
+
+---
 
 # 1.0版本
 * 修复dll复制不全,exe路径下如不存在dll！
@@ -49,20 +52,25 @@ example：
 ZeroEye.exe -p c:\             //搜索c盘所有exe是否有劫持的可能
 ZeroEye.exe -i aaa.exe         //判断指定exe是否有劫持的可能
 ```
-
-    
-![image](https://github.com/user-attachments/assets/12ac33d7-aacb-477f-b119-51f6fa7c0730)
-
-![image](https://github.com/user-attachments/assets/4ae352c5-5664-4654-be1c-ad005e823f71)
-
 ---
 ## 3.1版本
 ### 存在问题
 
-* 修复遍历导入表时,遇到空格名称输出问题。
+* 修复遍历导入表时，遇到空格名称输出问题。
  
 * 修复目录遍历功能，可正常遍历整个盘符。
 
 * 修复dllname触发的0xc05的内存访问冲突报错。
 
 * 整理代码，并且对部分做出调整。
+
+---
+## 3.2版本
+### 存在问题
+
+* 优先排序可劫持目录顺序，例如：可劫持的用户dll为1个，那么输出的目录名称为(1)、xxxx
+
+* 禁用损坏镜像的信息提示。
+
+* 优化Is_SystemDLL中的LoadLibraryA改为LoadLibraryExA，防止恶意dll被加载！！
+
