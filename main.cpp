@@ -4,10 +4,11 @@
 #include <io.h>
 #include <filesystem>
 #include <fstream>
+#include <string>
 bool isx64 = false;
 bool Is_SystemDLL(const char* dllName) {
 
-    HMODULE hModule = LoadLibraryA(dllName);
+    HMODULE hModule = LoadLibraryExA(dllName, NULL, DONT_RESOLVE_DLL_REFERENCES);
     if (hModule)
     {
         FreeLibrary(hModule);
@@ -75,17 +76,18 @@ void File_Output(std::string filePath, std::vector<std::string>& DllList) {
     std::filesystem::path targetDir;
 
     std::filesystem::path path(filePath);
-    std::string ExeName = path.filename().string(); // 获取文件名
+    
+    std::string ExeDir = "(" + std::to_string(iNum) + ")、" + path.stem().string();
     if (isx64)
     {
-        targetDir = currentDir / "x64bin" / ExeName;
+        targetDir = currentDir / "x64bin" / ExeDir;
     }
     else
     {
-        targetDir = currentDir / "x86bin" / ExeName;
+        targetDir = currentDir / "x86bin" / ExeDir;
     }
 
-
+    std::string ExeName = path.filename().string(); // 获取文件名
     // 创建目标文件夹
     if (!std::filesystem::exists(targetDir)) {
         std::filesystem::create_directories(targetDir);
@@ -119,6 +121,9 @@ void File_Output(std::string filePath, std::vector<std::string>& DllList) {
     dllNamesFile.close();
 }
 void ViewImportedDLLs(const char* filePath, std::vector<std::string>& DllList) {
+    // 设置错误模式，防止弹出错误信息框
+    SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
+
     HMODULE hModule = LoadLibraryExA(filePath, NULL, DONT_RESOLVE_DLL_REFERENCES);
     if (hModule == NULL) {
         return;
@@ -203,7 +208,9 @@ void getFiles_and_view(const std::string& path) {
     std::string searchPath = path + "\\*";
 
     if ((hFile = _findfirst(searchPath.c_str(), &fileinfo)) == -1) {
+        SetConsoleColor(FOREGROUND_RED);
         std::cerr << "[-] Failed to open directory: " << path << std::endl;
+        SetConsoleColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         return;
     }
 
@@ -264,13 +271,17 @@ int main(int argc, char* argv[]) {
   / /_  |  __/ | |    | (_) | | |___  | |_| | |  __/
  /____|  \___| |_|     \___/  |_____|  \__, |  \___|
                                        |___/                 
-)" << std::endl;
+
+    Github:https://github.com/ImCoriander/ZeroEye
+    公众号：**零攻防**)" << std::endl;
 #if defined(_WIN64)
     isx64 = true;
 #else
     isx64 = false;
 #endif
-    std::cout << (isx64 ? "\t\t\t\t  x64" : "\t\t\t\t  x86") << " Version:3.1\n" << std::endl;
+    std::cout << (isx64 ? "\t\t\t\t  x64" : "\t\t\t\t  x86") << " Version:3.2\n" << std::endl;
+
+
 
     if (argc < 2) {
         DisplayHelp();
