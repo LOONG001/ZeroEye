@@ -270,7 +270,7 @@ int main(int argc, char* argv[]) {
 #else
     isx64 = false;
 #endif
-    std::cout << (isx64 ? "\t\t\t\t  x64" : "\t\t\t\t  x86") << " Version:3.0\n" << std::endl;
+    std::cout << (isx64 ? "\t\t\t\t  x64" : "\t\t\t\t  x86") << " Version:3.1\n" << std::endl;
 
     if (argc < 2) {
         DisplayHelp();
