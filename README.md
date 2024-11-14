@@ -1,4 +1,7 @@
-# ZeroEye ⭐⭐⭐⭐⭐
+# ⭐⭐⭐⭐⭐   ![to02x-362ea](https://github.com/user-attachments/assets/55f1bb83-5527-4958-8770-bbb444c2f92f)⭐⭐⭐⭐⭐
+
+
+
 ## 更多关于本项目的介绍，请前往公众号获取更详细使用教程：
 
 **[ZeroEye](https://mp.weixin.qq.com/s?__biz=MzkyNDUzNjk4MQ==&mid=2247484591&idx=1&sn=50b813e4c626aa967d6c506c4749c032&chksm=c1d51d55f6a294434e27bbcd6dc45268e64ac8a86bc1215c2df9140d350ea2f26ed6d91a2655#rd)** 用于扫描 EXE 文件的导入表，列出导入的DLL文件，并筛选出非系统DLL，符合条件的文件将被复制到特定的 **bin**  文件夹，并生成 **Infos.txt** 文件记录DLL信息。自动化找白文件，灰梭子好搭档！！！
@@ -73,4 +76,17 @@ ZeroEye.exe -i aaa.exe         //判断指定exe是否有劫持的可能
 * 禁用损坏镜像的信息提示。
 
 * 优化Is_SystemDLL中的LoadLibraryA改为LoadLibraryExA，防止恶意dll被加载！！
+
+## 3.3版本
+### 添加功能及优化
+
+* 优化代码，实现快速扫盘
+
+* 查看64 or 86的导入导出表
+
+* dll递归查询
+
+* 签名校验
+  
+* 生成模板
 
