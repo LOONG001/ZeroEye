@@ -4,7 +4,7 @@
 
 ## 更多关于本项目的介绍，请前往公众号获取更详细使用教程：
 
-**[ZeroEye](https://mp.weixin.qq.com/s?__biz=MzkyNDUzNjk4MQ==&mid=2247484591&idx=1&sn=50b813e4c626aa967d6c506c4749c032&chksm=c1d51d55f6a294434e27bbcd6dc45268e64ac8a86bc1215c2df9140d350ea2f26ed6d91a2655#rd)** 用于扫描 EXE 文件的导入表，列出导入的DLL文件，并筛选出非系统DLL，符合条件的文件将被复制到特定的 **bin**  文件夹，并生成 **Infos.txt** 文件记录DLL信息。自动化找白文件，灰梭子好搭档！！！
+**[ZeroEye](https://mp.weixin.qq.com/s/D0x4XSr37cMrv7Y4ScRqTg)** 用于扫描 EXE 文件的导入表，列出导入的DLL文件，并筛选出非系统DLL，符合条件的文件将被复制到特定的 **bin**  文件夹，并生成 **Infos.txt** 文件记录DLL信息。自动化找白文件，灰梭子好搭档！！！
 
 **[灰梭子](https://mp.weixin.qq.com/s?__biz=MzkyNDUzNjk4MQ==&mid=2247483925&idx=1&sn=7424113417378915f17155260bdeef67&chksm=c1d51beff6a292f9cbb906cbaa2a55925d7ac1faeb9860b2d340b95cd33a2a0478d494daf711&scene=21#wechat_redirect)** 快速对dll进行解析函数名，并且生成对应的劫持代码，实现快速利用vs进行编译，提供了劫持模板，可前往获取。
 
@@ -18,10 +18,11 @@
 
 * 1.0 可在Release中获取
 * 2.0 可在Release中获取
-* 3.0 （**船新版本**）将不再在以上基础上更新，以后将完全使用c++完成所有操作！！！
+* 3.0 **船新版本**将不再在以上基础上更新，以后将完全使用c++完成所有操作！！！
 * 3.1 修复bug
 * 3.2 优化输出和禁用损坏映像提示
-
+* 3.3 优化扫描速度、同时支持x64 or x86导入导出表、模板生成、检测dll嵌套调用、签名校验
+  
 ---
 
 # 1.0版本
