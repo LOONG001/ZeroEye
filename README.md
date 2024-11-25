@@ -91,3 +91,7 @@ ZeroEye.exe -i aaa.exe         //判断指定exe是否有劫持的可能
   
 * 生成模板
 
+---
+## ⭐⭐Stargazers over time ⭐⭐
+[![Stargazers over time](https://starchart.cc/ImCoriander/ZeroEye.svg?variant=adaptive)](https://starchart.cc/ImCoriander/ZeroEye)
+
