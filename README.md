@@ -22,7 +22,7 @@
 * 3.1 修复bug
 * 3.2 优化输出和禁用损坏映像提示
 * 3.3 优化扫描速度、同时支持x64 or x86导入导出表、模板生成、检测dll嵌套调用、签名校验
-  
+* 3.4 添加可选x64或x86，修复class识别错误问题。
 ---
 
 # 1.0版本
@@ -78,6 +78,8 @@ ZeroEye.exe -i aaa.exe         //判断指定exe是否有劫持的可能
 
 * 优化Is_SystemDLL中的LoadLibraryA改为LoadLibraryExA，防止恶意dll被加载！！
 
+---
+
 ## 3.3版本
 ### 添加功能及优化
 
@@ -92,6 +94,16 @@ ZeroEye.exe -i aaa.exe         //判断指定exe是否有劫持的可能
 * 生成模板
 
 ---
+## 3.4版本
+### 添加功能及优化
+
+* 修复class识别问题
+
+* 添加功能,支持指定x64或x86
+
+---
+
+
 ## ⭐⭐Stargazers over time ⭐⭐
 [![Stargazers over time](https://starchart.cc/ImCoriander/ZeroEye.svg?variant=adaptive)](https://starchart.cc/ImCoriander/ZeroEye)
 
